@@ -112,6 +112,24 @@ resource "aws_vpc_security_group_ingress_rule" "rds_oracle_from_ecs" {
   to_port                      = 1521
 }
 
+resource "aws_vpc_security_group_ingress_rule" "rds_oracle_from_bastion" {
+  security_group_id            = aws_security_group.rds.id
+  description                  = "Oracle listener from Linux bastion"
+  referenced_security_group_id = aws_security_group.bastion.id
+  ip_protocol                  = "tcp"
+  from_port                    = 1521
+  to_port                      = 1521
+}
+
+resource "aws_vpc_security_group_ingress_rule" "rds_oracle_from_windows_bastion" {
+  security_group_id            = aws_security_group.rds.id
+  description                  = "Oracle listener from Windows bastion"
+  referenced_security_group_id = aws_security_group.windows_bastion.id
+  ip_protocol                  = "tcp"
+  from_port                    = 1521
+  to_port                      = 1521
+}
+
 # ── EFS ───────────────────────────────────────────────────────────────────────
 
 resource "aws_security_group" "efs" {
