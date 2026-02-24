@@ -131,6 +131,24 @@ resource "aws_vpc_security_group_ingress_rule" "efs_nfs_from_ecs" {
   to_port                      = 2049
 }
 
+resource "aws_vpc_security_group_ingress_rule" "efs_nfs_from_bastion" {
+  security_group_id            = aws_security_group.efs.id
+  description                  = "NFS from Linux bastion"
+  referenced_security_group_id = aws_security_group.bastion.id
+  ip_protocol                  = "tcp"
+  from_port                    = 2049
+  to_port                      = 2049
+}
+
+resource "aws_vpc_security_group_ingress_rule" "efs_nfs_from_windows_bastion" {
+  security_group_id            = aws_security_group.efs.id
+  description                  = "NFS from Windows bastion"
+  referenced_security_group_id = aws_security_group.windows_bastion.id
+  ip_protocol                  = "tcp"
+  from_port                    = 2049
+  to_port                      = 2049
+}
+
 # ── VPC Endpoints ─────────────────────────────────────────────────────────────
 
 resource "aws_security_group" "vpc_endpoints" {
