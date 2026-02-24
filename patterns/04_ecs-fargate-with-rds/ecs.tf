@@ -44,6 +44,19 @@ resource "aws_ecs_task_definition" "app" {
       { name = "DB_NAME", value = var.db_name }
     ]
 
+    # ECS Exec (SSM) がゾンビプロセスを残さないよう init プロセスを有効化
+    linuxParameters = {
+      initProcessEnabled = true
+    }
+
+    healthCheck = {
+      command     = ["CMD-SHELL", "curl -f http://localhost:${var.app_port}${var.health_check_path} || exit 1"]
+      interval    = 30
+      timeout     = 5
+      retries     = 3
+      startPeriod = 60 # Tomcat 起動時間を考慮
+    }
+
     mountPoints = [{
       sourceVolume  = "efs-volume"
       containerPath = var.efs_container_path

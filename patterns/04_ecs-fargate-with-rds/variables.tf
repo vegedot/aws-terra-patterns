@@ -93,6 +93,12 @@ variable "efs_container_path" {
   default     = "/mnt/efs"
 }
 
+variable "health_check_path" {
+  description = "ヘルスチェックパス。Tomcat HealthCheckValve のパスと一致させること"
+  type        = string
+  default     = "/health-check"
+}
+
 # ── Oracle RDS ────────────────────────────────────────────────────────────────
 
 variable "db_name" {
