@@ -24,6 +24,28 @@ resource "aws_iam_instance_profile" "bastion" {
   role = aws_iam_role.bastion.name
 }
 
+resource "aws_iam_role_policy" "bastion_s3" {
+  name = "${local.name_prefix}-bastion-s3"
+  role = aws_iam_role.bastion.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+      ]
+      Resource = [
+        aws_s3_bucket.dev_files.arn,
+        "${aws_s3_bucket.dev_files.arn}/*",
+      ]
+    }]
+  })
+}
+
 # ── ECS Task Execution ────────────────────────────────────────────────────────
 
 resource "aws_iam_role" "ecs_task_execution" {

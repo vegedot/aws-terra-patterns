@@ -32,3 +32,8 @@ output "ecs_cluster_name" {
   description = "ECS cluster name"
   value       = aws_ecs_cluster.this.name
 }
+
+output "dev_files_bucket_name" {
+  description = "開発用ファイル共有 S3 バケット名（Bastion から aws s3 cp などで使用）"
+  value       = aws_s3_bucket.dev_files.bucket
+}
