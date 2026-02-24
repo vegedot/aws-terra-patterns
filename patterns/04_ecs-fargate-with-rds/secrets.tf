@@ -1,7 +1,7 @@
 resource "random_password" "db" {
   length           = 28 # Oracle RDS パスワードは最大30文字
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#$%*()-_=+[]{}<>:?"
 }
 
 resource "aws_secretsmanager_secret" "db" {
