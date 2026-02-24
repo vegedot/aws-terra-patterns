@@ -24,6 +24,31 @@ resource "aws_iam_instance_profile" "bastion" {
   role = aws_iam_role.bastion.name
 }
 
+resource "aws_iam_role_policy" "bastion_ecs_exec" {
+  name = "${local.name_prefix}-bastion-ecs-exec"
+  role = aws_iam_role.bastion.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["ecs:ExecuteCommand", "ecs:DescribeTasks"]
+        Resource = [
+          aws_ecs_cluster.this.arn,
+          "${aws_ecs_cluster.this.arn}/*", # タスク ARN
+        ]
+      },
+      {
+        # ECS Exec が内部的に起動する SSM セッションの開始を許可
+        Effect   = "Allow"
+        Action   = ["ssm:StartSession"]
+        Resource = ["arn:aws:ecs:${var.aws_region}:*:task/${aws_ecs_cluster.this.name}/*"]
+      },
+    ]
+  })
+}
+
 resource "aws_iam_role_policy" "bastion_ecr" {
   name = "${local.name_prefix}-bastion-ecr"
   role = aws_iam_role.bastion.id
@@ -69,6 +94,43 @@ resource "aws_iam_role_policy" "bastion_s3" {
         aws_s3_bucket.dev_files.arn,
         "${aws_s3_bucket.dev_files.arn}/*",
       ]
+    }]
+  })
+}
+
+# ── ECS Task Role ─────────────────────────────────────────────────────────────
+# タスク自身が使用するロール（ECS Exec / アプリの AWS API 呼び出しに使用）
+# ※ Task Execution Role（ECR プル・Secrets Manager 取得）とは別物
+
+resource "aws_iam_role" "ecs_task" {
+  name = "${local.name_prefix}-ecs-task"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+}
+
+# ECS Exec（SSM Session Manager）に必要な最小権限
+resource "aws_iam_role_policy" "ecs_task_exec_command" {
+  name = "${local.name_prefix}-ecs-task-exec-command"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel",
+      ]
+      Resource = ["*"]
     }]
   })
 }

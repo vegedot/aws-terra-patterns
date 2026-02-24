@@ -14,6 +14,7 @@ resource "aws_ecs_task_definition" "app" {
   cpu                      = var.app_cpu
   memory                   = var.app_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
 
   container_definitions = jsonencode([{
     name      = "app"
@@ -87,6 +88,8 @@ resource "aws_ecs_service" "app" {
     container_name   = "app"
     container_port   = var.app_port
   }
+
+  enable_execute_command = true # Bastion から `aws ecs execute-command` で接続可能にする
 
   deployment_circuit_breaker {
     enable   = true
