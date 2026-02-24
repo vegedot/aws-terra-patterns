@@ -18,18 +18,13 @@ output "alb_dns_name" {
   value       = aws_lb.this.dns_name
 }
 
-output "aurora_endpoint" {
-  description = "Aurora cluster writer endpoint"
-  value       = aws_rds_cluster.this.endpoint
-}
-
-output "aurora_reader_endpoint" {
-  description = "Aurora cluster reader endpoint"
-  value       = aws_rds_cluster.this.reader_endpoint
+output "oracle_endpoint" {
+  description = "Oracle RDS instance endpoint"
+  value       = aws_db_instance.this.address
 }
 
 output "db_secret_arn" {
-  description = "ARN of the Secrets Manager secret holding Aurora credentials"
+  description = "ARN of the Secrets Manager secret holding Oracle RDS credentials"
   value       = aws_secretsmanager_secret.db.arn
 }
 

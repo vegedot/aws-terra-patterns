@@ -18,8 +18,11 @@ app_cpu           = 512
 app_memory        = 1024
 app_desired_count = 1
 
-# Aurora PostgreSQL
-db_name            = "mydb"
-db_master_username = "postgres"
-db_instance_class  = "db.t4g.medium"
-db_instance_count  = 1
+# Oracle RDS
+# 利用可能なバージョンは以下で確認:
+#   aws rds describe-db-engine-versions --engine oracle-se2 --query 'DBEngineVersions[*].EngineVersion'
+db_name              = "ORCL"
+db_master_username   = "dbadmin"
+db_engine_version    = "19.0.0.0.ru-2025-01.rur-2025-01.r1"
+db_instance_class    = "db.t3.medium"
+db_allocated_storage = 20

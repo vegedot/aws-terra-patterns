@@ -38,8 +38,8 @@ resource "aws_ecs_task_definition" "app" {
     ]
 
     environment = [
-      { name = "DB_HOST", value = aws_rds_cluster.this.endpoint },
-      { name = "DB_PORT", value = tostring(aws_rds_cluster.this.port) },
+      { name = "DB_HOST", value = aws_db_instance.this.address },
+      { name = "DB_PORT", value = tostring(aws_db_instance.this.port) },
       { name = "DB_NAME", value = var.db_name }
     ]
 

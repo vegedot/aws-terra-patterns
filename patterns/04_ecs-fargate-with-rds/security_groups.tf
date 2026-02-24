@@ -93,23 +93,23 @@ resource "aws_vpc_security_group_egress_rule" "ecs_all" {
   ip_protocol       = "-1"
 }
 
-# ── Aurora PostgreSQL ─────────────────────────────────────────────────────────
+# ── Oracle RDS ────────────────────────────────────────────────────────────────
 
 resource "aws_security_group" "rds" {
   name        = "${local.name_prefix}-rds-sg"
-  description = "Allow PostgreSQL from ECS tasks"
+  description = "Allow Oracle listener from ECS tasks"
   vpc_id      = aws_vpc.this.id
 
   tags = { Name = "${local.name_prefix}-rds-sg" }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "rds_pg_from_ecs" {
+resource "aws_vpc_security_group_ingress_rule" "rds_oracle_from_ecs" {
   security_group_id            = aws_security_group.rds.id
-  description                  = "PostgreSQL from ECS tasks"
+  description                  = "Oracle listener from ECS tasks"
   referenced_security_group_id = aws_security_group.ecs.id
   ip_protocol                  = "tcp"
-  from_port                    = 5432
-  to_port                      = 5432
+  from_port                    = 1521
+  to_port                      = 1521
 }
 
 # ── VPC Endpoints ─────────────────────────────────────────────────────────────

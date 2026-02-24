@@ -87,27 +87,38 @@ variable "app_desired_count" {
   default     = 1
 }
 
-# ── Aurora PostgreSQL ─────────────────────────────────────────────────────────
+# ── Oracle RDS ────────────────────────────────────────────────────────────────
 
 variable "db_name" {
-  description = "Name of the initial database to create in Aurora"
+  description = "Oracle SID（最大8文字、英字始まり）"
   type        = string
+  default     = "ORCL"
+
+  validation {
+    condition     = length(var.db_name) <= 8 && can(regex("^[A-Za-z][A-Za-z0-9]*$", var.db_name))
+    error_message = "db_name (Oracle SID) must be 1-8 alphanumeric characters starting with a letter."
+  }
 }
 
 variable "db_master_username" {
-  description = "Master username for Aurora"
+  description = "Oracle RDS マスターユーザー名（sys / system / oracle などの予約語は使用不可）"
   type        = string
-  default     = "postgres"
+  default     = "dbadmin"
+}
+
+variable "db_engine_version" {
+  description = "Oracle SE2 エンジンバージョン（例: 19.0.0.0.ru-2025-01.rur-2025-01.r1）。利用可能なバージョンは `aws rds describe-db-engine-versions --engine oracle-se2` で確認すること"
+  type        = string
 }
 
 variable "db_instance_class" {
-  description = "Aurora instance class"
+  description = "Oracle RDS インスタンスクラス（oracle-se2 は ARM 非対応のため db.t4g 系は使用不可）"
   type        = string
-  default     = "db.t4g.medium"
+  default     = "db.t3.medium"
 }
 
-variable "db_instance_count" {
-  description = "Number of Aurora cluster instances (1 = writer only)"
+variable "db_allocated_storage" {
+  description = "Oracle RDS に割り当てるストレージ容量 (GiB)。最小 10 GiB"
   type        = number
-  default     = 1
+  default     = 20
 }
