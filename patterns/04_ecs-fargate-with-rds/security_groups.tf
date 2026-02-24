@@ -112,6 +112,25 @@ resource "aws_vpc_security_group_ingress_rule" "rds_oracle_from_ecs" {
   to_port                      = 1521
 }
 
+# ── EFS ───────────────────────────────────────────────────────────────────────
+
+resource "aws_security_group" "efs" {
+  name        = "${local.name_prefix}-efs-sg"
+  description = "Allow NFS from ECS tasks"
+  vpc_id      = aws_vpc.this.id
+
+  tags = { Name = "${local.name_prefix}-efs-sg" }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "efs_nfs_from_ecs" {
+  security_group_id            = aws_security_group.efs.id
+  description                  = "NFS from ECS tasks"
+  referenced_security_group_id = aws_security_group.ecs.id
+  ip_protocol                  = "tcp"
+  from_port                    = 2049
+  to_port                      = 2049
+}
+
 # ── VPC Endpoints ─────────────────────────────────────────────────────────────
 
 resource "aws_security_group" "vpc_endpoints" {

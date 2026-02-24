@@ -43,6 +43,12 @@ resource "aws_ecs_task_definition" "app" {
       { name = "DB_NAME", value = var.db_name }
     ]
 
+    mountPoints = [{
+      sourceVolume  = "efs-volume"
+      containerPath = var.efs_container_path
+      readOnly      = false
+    }]
+
     logConfiguration = {
       logDriver = "awslogs"
       options = {
@@ -52,6 +58,15 @@ resource "aws_ecs_task_definition" "app" {
       }
     }
   }])
+
+  volume {
+    name = "efs-volume"
+
+    efs_volume_configuration {
+      file_system_id     = aws_efs_file_system.app.id
+      transit_encryption = "ENABLED"
+    }
+  }
 }
 
 resource "aws_ecs_service" "app" {

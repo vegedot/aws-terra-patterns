@@ -87,6 +87,12 @@ variable "app_desired_count" {
   default     = 1
 }
 
+variable "efs_container_path" {
+  description = "EFS ボリュームをマウントするコンテナ内のパス"
+  type        = string
+  default     = "/mnt/efs"
+}
+
 # ── Oracle RDS ────────────────────────────────────────────────────────────────
 
 variable "db_name" {

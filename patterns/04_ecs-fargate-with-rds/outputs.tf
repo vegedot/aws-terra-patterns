@@ -37,3 +37,8 @@ output "dev_files_bucket_name" {
   description = "開発用ファイル共有 S3 バケット名（Bastion から aws s3 cp などで使用）"
   value       = aws_s3_bucket.dev_files.bucket
 }
+
+output "efs_file_system_id" {
+  description = "EFS ファイルシステム ID（コンテナ内 var.efs_container_path にマウント済み）"
+  value       = aws_efs_file_system.app.id
+}
