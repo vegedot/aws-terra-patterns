@@ -24,6 +24,33 @@ resource "aws_iam_instance_profile" "bastion" {
   role = aws_iam_role.bastion.name
 }
 
+resource "aws_iam_role_policy" "bastion_ecr" {
+  name = "${local.name_prefix}-bastion-ecr"
+  role = aws_iam_role.bastion.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["ecr:GetAuthorizationToken"]
+        Resource = ["*"]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
+          "ecr:PutImage",
+        ]
+        Resource = [aws_ecr_repository.app.arn]
+      },
+    ]
+  })
+}
+
 resource "aws_iam_role_policy" "bastion_s3" {
   name = "${local.name_prefix}-bastion-s3"
   role = aws_iam_role.bastion.id
