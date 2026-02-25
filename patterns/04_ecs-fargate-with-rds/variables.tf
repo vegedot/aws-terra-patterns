@@ -93,10 +93,10 @@ variable "efs_container_path" {
   default     = "/mnt/efs"
 }
 
-variable "alb_sticky_session_duration" {
-  description = "ALB スティッキーセッションの有効期間（秒）。1〜604800（7日）の範囲で指定"
-  type        = number
-  default     = 86400 # 1日
+variable "alb_sticky_session_cookie_name" {
+  description = "ALB スティッキーセッションに使用するアプリ Cookie 名（アプリが Set-Cookie で発行する名前と一致させること）"
+  type        = string
+  default     = "JSESSIONID"
 }
 
 variable "health_check_path" {

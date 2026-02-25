@@ -19,8 +19,8 @@ resource "aws_lb_target_group" "app" {
   target_type = "ip"
 
   stickiness {
-    type            = "lb_cookie"
-    cookie_duration = var.alb_sticky_session_duration
+    type        = "app_cookie"
+    cookie_name = var.alb_sticky_session_cookie_name
   }
 
   health_check {
