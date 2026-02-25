@@ -93,6 +93,12 @@ variable "efs_container_path" {
   default     = "/mnt/efs"
 }
 
+variable "alb_sticky_session_duration" {
+  description = "ALB スティッキーセッションの有効期間（秒）。1〜604800（7日）の範囲で指定"
+  type        = number
+  default     = 86400 # 1日
+}
+
 variable "health_check_path" {
   description = "ヘルスチェックパス。Tomcat HealthCheckValve のパスと一致させること"
   type        = string
