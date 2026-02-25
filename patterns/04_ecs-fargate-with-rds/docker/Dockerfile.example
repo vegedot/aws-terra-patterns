@@ -1,0 +1,38 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ビルドステージ
+# ──────────────────────────────────────────────────────────────────────────────
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /build
+COPY . .
+RUN ./mvnw package -DskipTests
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 実行ステージ
+# ──────────────────────────────────────────────────────────────────────────────
+FROM tomcat:10.1-jdk21
+
+# Tomcat デフォルトアプリを削除
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+# WAR をビルド時に展開する
+# WAR のままだと catalina.sh 起動後に展開されるため、entrypoint での書き換えが間に合わない
+# ディレクトリ形式でデプロイすることで Tomcat は再展開せずそのまま使用する
+RUN mkdir -p /usr/local/tomcat/webapps/ROOT
+COPY --from=builder /build/target/app.war /tmp/app.war
+RUN cd /usr/local/tomcat/webapps/ROOT && jar xf /tmp/app.war && rm /tmp/app.war
+
+# EFS マウントポイントを作成（ECS が containerPath にマウントするため事前に存在が必要）
+RUN mkdir -p /mnt/efs
+
+# ECS タスク ID でログパスを動的書き換えする起動スクリプト
+# ビルドコンテキストはパターンルート（patterns/04_ecs-fargate-with-rds/）を指定すること:
+#   docker build -f docker/Dockerfile.example .
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 8080
+
+# docker-entrypoint.sh が App.properties を書き換えてから catalina.sh を起動する
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["catalina.sh", "run"]

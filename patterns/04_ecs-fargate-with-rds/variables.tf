@@ -84,13 +84,19 @@ variable "app_memory" {
 variable "app_desired_count" {
   description = "Desired number of ECS task instances"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "efs_container_path" {
   description = "EFS ボリュームをマウントするコンテナ内のパス"
   type        = string
   default     = "/mnt/efs"
+}
+
+variable "efs_log_paths" {
+  description = "EFS 上のアプリログファイルパス一覧（Fluent Bit の tail input に使用）。glob パターン可。<TASKID> はコンテナ起動時に ECS タスク ID に置換される"
+  type        = list(string)
+  default     = ["/mnt/efs/logs/<TASKID>/*.log"]
 }
 
 variable "alb_sticky_session_cookie_name" {

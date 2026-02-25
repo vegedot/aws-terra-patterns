@@ -26,7 +26,15 @@ resource "aws_security_group" "windows_bastion" {
   tags = { Name = "${local.name_prefix}-windows-bastion-sg" }
 }
 
-# インバウンドルールなし（SSM はアウトバウンド通信のみで動作する）
+# Linux bastion 経由の SSM ポートフォワード用 RDP
+resource "aws_vpc_security_group_ingress_rule" "windows_bastion_rdp_from_linux_bastion" {
+  security_group_id            = aws_security_group.windows_bastion.id
+  description                  = "RDP from Linux bastion via SSM port forwarding"
+  referenced_security_group_id = aws_security_group.bastion.id
+  ip_protocol                  = "tcp"
+  from_port                    = 3389
+  to_port                      = 3389
+}
 
 resource "aws_vpc_security_group_egress_rule" "windows_bastion_all" {
   security_group_id = aws_security_group.windows_bastion.id

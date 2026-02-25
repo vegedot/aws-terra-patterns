@@ -18,6 +18,20 @@ app_cpu           = 512
 app_memory        = 1024
 app_desired_count = 1
 
+efs_container_path = "/mnt/efs"
+
+# <TASKID> は起動時にタスク ID に置換される（複数パス指定可）
+efs_log_paths = [
+  "/mnt/efs/logs/<TASKID>/*.log",
+  # "/mnt/efs/audit/<TASKID>/*.log",
+]
+
+# ALB スティッキーセッション: アプリが Set-Cookie で発行する Cookie 名と一致させること
+alb_sticky_session_cookie_name = "JSESSIONID"
+
+# ヘルスチェックパス: Tomcat HealthCheckValve のパスと一致させること
+health_check_path = "/health-check"
+
 # Oracle RDS
 # 利用可能なバージョンは以下で確認:
 #   aws rds describe-db-engine-versions --engine oracle-se2 --query 'DBEngineVersions[*].EngineVersion'

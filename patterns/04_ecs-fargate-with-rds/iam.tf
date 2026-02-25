@@ -115,6 +115,25 @@ resource "aws_iam_role" "ecs_task" {
   })
 }
 
+# Fluent Bit サイドカーが CloudWatch Logs にログを書き込むための権限
+resource "aws_iam_role_policy" "ecs_task_cloudwatch_logs" {
+  name = "${local.name_prefix}-ecs-task-cloudwatch-logs"
+  role = aws_iam_role.ecs_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams",
+      ]
+      Resource = ["${aws_cloudwatch_log_group.app_files.arn}:*"]
+    }]
+  })
+}
+
 # ECS Exec（SSM Session Manager）に必要な最小権限
 resource "aws_iam_role_policy" "ecs_task_exec_command" {
   name = "${local.name_prefix}-ecs-task-exec-command"

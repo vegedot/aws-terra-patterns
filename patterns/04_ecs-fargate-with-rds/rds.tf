@@ -10,6 +10,8 @@ resource "aws_db_instance" "this" {
   instance_class = var.db_instance_class
   license_model  = "license-included"
 
+  character_set_name = "JA16SJISTILDE"
+
   db_name  = var.db_name # Oracle SID（最大8文字、英字始まり）
   username = var.db_master_username
   password = random_password.db.result

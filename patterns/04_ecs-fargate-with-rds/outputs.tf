@@ -8,9 +8,14 @@ output "linux_bastion_instance_id" {
   value       = aws_instance.bastion.id
 }
 
-output "windows_bastion_instance_id" {
-  description = "Windows bastion instance ID (use in AWS Console > Fleet Manager to start RDP session)"
-  value       = aws_instance.windows_bastion.id
+output "windows_bastion_1_instance_id" {
+  description = "Windows bastion 1 (Server 2022) instance ID (use in AWS Console > Fleet Manager to start RDP session)"
+  value       = aws_instance.windows_bastion_1.id
+}
+
+output "windows_bastion_2_instance_id" {
+  description = "Windows bastion 2 (Server 2016) instance ID (use in AWS Console > Fleet Manager to start RDP session)"
+  value       = aws_instance.windows_bastion_2.id
 }
 
 output "alb_dns_name" {
