@@ -5,6 +5,16 @@ locals {
     for i, path in var.efs_log_paths :
     "[INPUT]\\n    Name tail\\n    Path ${path}\\n    Tag app.${i}\\n    DB /tmp/fluent-bit-${i}.db\\n    Refresh_Interval 5"
   ])
+
+  # Fluent Bit サイドカーの起動スクリプト（HEREDOC 形式）
+  # ${...} は Terraform が展開、$ のみ（$TASK_ID 等）はシェル変数として実行時に展開される
+  fluent_bit_command = <<-EOT
+    TASK_ID=$(wget -qO- $ECS_CONTAINER_METADATA_URI_V4/task | grep -o '"TaskARN" *: *"[^"]*"' | awk -F/ '{print $NF}' | tr -d '"')
+    [ -z "$TASK_ID" ] && TASK_ID=local
+    printf '[SERVICE]\n    Flush 5\n    Log_Level info\n${local.fluent_bit_inputs}\n[OUTPUT]\n    Name cloudwatch_logs\n    Match *\n    region ${var.aws_region}\n    log_group_name ${aws_cloudwatch_log_group.app_files.name}\n    log_stream_prefix task/<TASKID>/\n    auto_create_group false\n' > /tmp/fb.conf
+    sed -i "s|<TASKID>|$TASK_ID|g" /tmp/fb.conf
+    exec /fluent-bit/bin/fluent-bit -c /tmp/fb.conf
+  EOT
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -102,14 +112,7 @@ resource "aws_ecs_task_definition" "app" {
       condition     = "START"
     }]
 
-    command = [
-      "/bin/sh", "-c",
-      # ECS メタデータエンドポイントからタスク ID を取得し <TASKID> プレースホルダを置換する
-      # $ECS_CONTAINER_METADATA_URI_V4 は Terraform 変数でなく実行時の環境変数のため $ のままでよい
-      # curl の代わりに wget を使用（aws-for-fluent-bit の Amazon Linux minimal に確実に存在する）
-      # dirname の代わりに awk で代替（同様の理由）
-      "TASK_ID=$(wget -qO- $ECS_CONTAINER_METADATA_URI_V4/task | grep -o '\"TaskARN\":\"[^\"]*\"' | awk -F/ '{print $NF}' | tr -d '\"'); [ -z \"$TASK_ID\" ] && TASK_ID=local; printf '[SERVICE]\\n    Flush 5\\n    Log_Level info\\n${local.fluent_bit_inputs}\\n[OUTPUT]\\n    Name cloudwatch_logs\\n    Match *\\n    region ${var.aws_region}\\n    log_group_name ${aws_cloudwatch_log_group.app_files.name}\\n    log_stream_prefix task/<TASKID>/\\n    auto_create_group false\\n' > /tmp/fb.conf; sed -i \"s|<TASKID>|$TASK_ID|g\" /tmp/fb.conf; exec /fluent-bit/bin/fluent-bit -c /tmp/fb.conf"
-    ]
+    command = ["/bin/sh", "-c", local.fluent_bit_command]
 
     mountPoints = [{
       sourceVolume  = "efs-volume"
