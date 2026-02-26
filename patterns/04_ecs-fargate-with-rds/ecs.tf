@@ -8,8 +8,9 @@ locals {
 
   # Fluent Bit サイドカーの起動スクリプト（HEREDOC 形式）
   # ${...} は Terraform が展開、$ のみ（$TASK_ID 等）はシェル変数として実行時に展開される
+  # curl は aws-for-fluent-bit（Amazon Linux ベース）に存在する（wget は含まれない）
   fluent_bit_command = <<-EOT
-    TASK_ID=$(wget -qO- $ECS_CONTAINER_METADATA_URI_V4/task | grep -o '"TaskARN" *: *"[^"]*"' | awk -F/ '{print $NF}' | tr -d '"')
+    TASK_ID=$(curl -sf $ECS_CONTAINER_METADATA_URI_V4/task | grep -o '"TaskARN" *: *"[^"]*"' | awk -F/ '{print $NF}' | tr -d '"')
     [ -z "$TASK_ID" ] && TASK_ID=local
     printf '[SERVICE]\n    Flush 5\n    Log_Level info\n${local.fluent_bit_inputs}\n[OUTPUT]\n    Name cloudwatch_logs\n    Match *\n    region ${var.aws_region}\n    log_group_name ${aws_cloudwatch_log_group.app_files.name}\n    log_stream_prefix task/<TASKID>/\n    auto_create_group false\n' > /tmp/fb.conf
     sed -i "s|<TASKID>|$TASK_ID|g" /tmp/fb.conf
